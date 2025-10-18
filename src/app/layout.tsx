@@ -4,6 +4,8 @@ import path from "node:path";
 import { Inter } from "next/font/google";
 import "./reset.css";
 import "./globals.css";
+import Header from "./header";
+import Footer from "./footer";
 
 const criticalCss = readFileSync(
   path.join(process.cwd(), "src/app/critical.css"),
@@ -47,11 +49,13 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} antialiased`}>
+        <Header siteTitle={metadata.title as string} />
         <main className="grid relative w-full">
           <div className="col-start-2 flex flex-col items-start justify-start row-start-2 w-full">
             {children}
           </div>
         </main>
+        <Footer siteTitle={metadata.title as string} />
       </body>
     </html>
   );
