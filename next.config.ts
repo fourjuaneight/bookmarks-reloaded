@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import { config as loadEnv } from "dotenv";
+
+loadEnv();
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -24,6 +27,10 @@ const nextConfig: NextConfig = {
   },
   typescript: {
     ignoreBuildErrors: false,
+  },
+  env: {
+    NEXT_PUBLIC_HOME_URL: process.env.HOME_URL ?? "/",
+    NEXT_PUBLIC_GH_URL: process.env.GH_URL ?? "/",
   },
   headers: async () => [
     {
