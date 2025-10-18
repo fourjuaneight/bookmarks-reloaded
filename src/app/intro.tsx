@@ -1,0 +1,236 @@
+import Image from "next/image";
+import type { AnchorHTMLAttributes, JSX, ReactNode } from "react";
+import type { StaticImageData } from "next/image";
+
+import heroIllustration from "@/img/hero.png";
+import heroIllustrationAlt from "@/img/hero-clean.png";
+
+type IllustrationConfig = {
+  img: StaticImageData;
+  imgAlt: StaticImageData;
+  alt: string;
+  heading: string;
+  copy: string;
+};
+
+type SocialNavItem = {
+  label: string;
+  link: string;
+  linkback?: boolean;
+  external?: boolean;
+};
+
+const illustrations: { home: IllustrationConfig } = {
+  home: {
+    img: heroIllustration,
+    imgAlt: heroIllustrationAlt,
+    alt: "Illustration of Juan laying on a sofa, coding on a laptop. While being levitated by a wizard cat.",
+    heading: "Hi, I'm Juan",
+    copy:
+      "Full-Stack engineer and amateur archivist. This is where I ramble about automation, web development, data hoarding, and interesting stuff I find online.",
+  },
+};
+
+const socialNav: SocialNavItem[] = [
+  { label: "Email", link: "mailto:contact@cleverlaziness.com" },
+  {
+    label: "Mastodon",
+    link: "https://mastodon.social/@fourjuaneight",
+    linkback: true,
+  },
+  {
+    label: "GitHub",
+    link: process.env.NEXT_PUBLIC_GH_URL ?? "https://github.com/fourjuaneight",
+    external: true,
+  },
+  { label: "RSS", link: "/posts/index.xml" },
+];
+
+const normalizeLink = (link: string) => {
+  if (link.startsWith("http") || link.startsWith("mailto:")) {
+    return link;
+  }
+  return link.startsWith("/") ? link : `/${link}`;
+};
+
+const enhanceCopy = (copy: string) =>
+  copy.replace(/<a/g, "<a rel=\"noopener noreferrer\" target=\"_blank\"");
+
+function EmailIcon(): JSX.Element {
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox="0 0 1000 800"
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
+      xmlSpace="preserve"
+      className="duration-200 ease-in-out stroke-foreground h-7 transition-colors w-auto"
+      data-color="stroke"
+      aria-hidden="true"
+    >
+      <g transform="matrix(44.375,0,0,44.375,-32.5,-132.5)">
+        <path
+          d="M4,4L20,4C21.1,4 22,4.9 22,6L22,18C22,19.1 21.1,20 20,20L4,20C2.9,20 2,19.1 2,18L2,6C2,4.9 2.9,4 4,4Z"
+          style={{ fill: "none", fillRule: "nonzero", strokeWidth: "2px" }}
+        />
+      </g>
+      <g transform="matrix(44.375,0,0,44.375,-32.5,-132.5)">
+        <path
+          d="M22,6L12,13L2,6"
+          style={{ fill: "none", fillRule: "nonzero", strokeWidth: "2px" }}
+        />
+      </g>
+    </svg>
+  );
+}
+
+function MastodonIcon(): JSX.Element {
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox="0 0 30 30"
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
+      xmlSpace="preserve"
+      className="duration-200 ease-in-out fill-foreground h-auto transition-colors w-7"
+      data-color="fill"
+      aria-hidden="true"
+    >
+      <g transform="matrix(0.461539,0,0,0.461539,0.923068,-0.00600023)">
+        <path
+          d="M60.754,14.403C59.814,7.419 53.727,1.916 46.512,0.849C45.294,0.669 40.682,0.013 29.997,0.013L29.918,0.013C19.23,0.013 16.937,0.669 15.72,0.849C8.705,1.886 2.299,6.832 0.745,13.898C-0.003,17.378 -0.083,21.237 0.056,24.776C0.254,29.851 0.293,34.918 0.753,39.973C1.072,43.331 1.628,46.661 2.417,49.941C3.894,55.997 9.875,61.037 15.734,63.093C22.008,65.237 28.754,65.593 35.218,64.121C35.93,63.956 36.632,63.764 37.325,63.545C38.897,63.046 40.738,62.487 42.091,61.507C42.11,61.493 42.125,61.475 42.136,61.455C42.147,61.434 42.153,61.412 42.153,61.389L42.153,56.49C42.153,56.469 42.148,56.448 42.138,56.428C42.129,56.409 42.115,56.392 42.098,56.379C42.081,56.365 42.061,56.356 42.04,56.351C42.019,56.347 41.997,56.347 41.976,56.351C37.835,57.341 33.591,57.836 29.332,57.829C22.005,57.829 20.034,54.351 19.469,52.904C19.016,51.653 18.728,50.348 18.612,49.022C18.611,49 18.615,48.977 18.624,48.957C18.633,48.937 18.647,48.919 18.664,48.905C18.682,48.89 18.702,48.881 18.724,48.876C18.746,48.871 18.768,48.872 18.79,48.877C22.862,49.859 27.037,50.355 31.227,50.354C32.234,50.354 33.239,50.354 34.246,50.328C38.46,50.209 42.901,49.994 47.047,49.184C47.15,49.164 47.253,49.146 47.342,49.119C53.881,47.864 60.104,43.923 60.736,33.943C60.76,33.55 60.819,29.828 60.819,29.42C60.822,28.035 61.265,19.591 60.754,14.403ZM49.574,22.444L49.574,39.36L42.925,39.36L42.925,22.95C42.925,19.487 41.484,17.736 38.59,17.736C35.4,17.736 33.793,19.824 33.793,23.936L33.793,32.926L27.195,32.926L27.195,23.936C27.195,19.811 25.6,17.736 22.397,17.736C19.516,17.736 18.063,19.487 18.063,22.95L18.063,39.36L11.426,39.36L11.426,22.444C11.426,18.994 12.3,16.244 14.05,14.207C15.863,12.171 18.23,11.133 21.162,11.133C24.558,11.133 27.143,12.456 28.841,15.089L30.5,17.891L32.159,15.089C33.857,12.456 36.429,11.133 39.838,11.133C42.77,11.133 45.137,12.171 46.95,14.207C48.7,16.244 49.574,18.981 49.574,22.444Z"
+          style={{ fillRule: "nonzero" }}
+        />
+      </g>
+    </svg>
+  );
+}
+
+function GitHubIcon(): JSX.Element {
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox="0 0 200 200"
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
+      xmlSpace="preserve"
+      className="duration-200 ease-in-out fill-foreground h-auto transition-colors w-7"
+      data-color="fill"
+      aria-hidden="true"
+    >
+      <g transform="matrix(1.99766,0,0,1.99766,0,1.78188)">
+        <path
+          d="M93.402,25.263C88.926,17.595 82.852,11.524 75.184,7.048C67.512,2.571 59.141,0.333 50.059,0.333C40.977,0.333 32.602,2.571 24.93,7.048C17.262,11.524 11.191,17.595 6.715,25.263C2.238,32.934 0,41.309 0,50.391C0,61.298 3.184,71.106 9.547,79.817C15.914,88.528 24.137,94.559 34.219,97.903C35.391,98.122 36.262,97.97 36.824,97.45C37.391,96.927 37.672,96.274 37.672,95.493C37.672,95.364 37.66,94.192 37.641,91.973C37.617,89.759 37.605,87.825 37.605,86.173L36.109,86.434C35.152,86.61 33.945,86.684 32.492,86.661C31.035,86.641 29.523,86.489 27.961,86.204C26.395,85.923 24.941,85.274 23.594,84.251C22.246,83.231 21.293,81.895 20.727,80.243L20.074,78.743C19.641,77.743 18.957,76.638 18.023,75.419C17.086,74.204 16.141,73.376 15.188,72.942L14.73,72.618C14.426,72.399 14.145,72.138 13.883,71.833C13.621,71.532 13.426,71.227 13.297,70.923C13.168,70.618 13.273,70.368 13.621,70.173C13.969,69.973 14.602,69.88 15.512,69.88L16.816,70.075C17.684,70.247 18.762,70.77 20.043,71.638C21.324,72.509 22.379,73.638 23.203,75.028C24.203,76.809 25.406,78.165 26.82,79.102C28.234,80.036 29.656,80.501 31.09,80.501C32.522,80.501 33.762,80.391 34.805,80.177C35.848,79.958 36.824,79.634 37.738,79.2C38.129,76.286 39.195,74.048 40.93,72.485C38.453,72.223 36.227,71.833 34.25,71.309C32.272,70.79 30.23,69.942 28.125,68.766C26.016,67.595 24.266,66.138 22.875,64.403C21.488,62.665 20.344,60.38 19.457,57.559C18.566,54.731 18.121,51.473 18.121,47.782C18.121,42.524 19.836,38.048 23.27,34.352C21.66,30.399 21.812,25.97 23.727,21.059C24.984,20.665 26.855,20.962 29.332,21.938C31.809,22.915 33.621,23.755 34.773,24.446C35.926,25.141 36.848,25.731 37.543,26.208C41.586,25.079 45.758,24.513 50.059,24.513C54.359,24.513 58.531,25.079 62.574,26.208L65.051,24.641C66.742,23.598 68.742,22.645 71.047,21.774C73.348,20.907 75.109,20.669 76.328,21.059C78.281,25.97 78.457,30.399 76.848,34.356C80.281,38.048 81.996,42.524 81.996,47.782C81.996,51.473 81.551,54.743 80.66,57.591C79.77,60.438 78.621,62.72 77.207,64.434C75.793,66.153 74.035,67.595 71.926,68.77C69.82,69.942 67.777,70.79 65.801,71.309C63.824,71.833 61.598,72.223 59.121,72.485C61.379,74.442 62.508,77.524 62.508,81.739L62.508,95.493C62.508,96.274 62.781,96.927 63.324,97.446C63.867,97.966 64.723,98.122 65.898,97.903C75.98,94.555 84.203,88.528 90.566,79.813C96.934,71.102 100.117,61.294 100.117,50.388C100.113,41.309 97.875,32.934 93.402,25.263Z"
+          style={{ fillRule: "nonzero" }}
+        />
+      </g>
+    </svg>
+  );
+}
+
+function RssIcon(): JSX.Element {
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox="0 0 800 800"
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
+      xmlSpace="preserve"
+      className="duration-200 ease-in-out fill-foreground h-auto transition-colors w-7"
+      data-color="fill"
+      aria-hidden="true"
+    >
+      <g id="icon">
+        <path
+          d="M118.593,562.551C53.197,562.551 0,615.683 0,681.144C0,746.375 53.197,799.638 118.593,799.638C183.988,799.638 237.186,746.408 237.186,681.144C237.186,615.683 183.988,562.551 118.593,562.551Z"
+          style={{ fillRule: "nonzero" }}
+        />
+        <path
+          d="M12.329,261.417C5.556,261.417 0,266.974 0,273.812L0,424.33C0,431.103 5.556,436.627 12.329,436.627C205.622,436.627 362.979,593.917 362.979,787.276C362.979,794.016 368.437,799.605 375.308,799.605L526.451,799.605C533.322,799.605 538.846,794.016 538.846,787.276L538.254,783.429C536.084,495.282 300.904,261.417 12.329,261.417Z"
+          style={{ fillRule: "nonzero" }}
+        />
+        <path
+          d="M799.31,783.429C797.172,351.175 444.879,0.329 12.329,0.329C5.556,0.329 0,5.885 0,12.724L0,167.615C0,174.421 5.556,179.944 12.329,179.944C347.23,179.944 619.661,452.408 619.661,787.309C619.661,794.049 625.185,799.638 631.925,799.638L787.539,799.638C794.279,799.638 800,794.049 800,787.309L799.31,783.429Z"
+          style={{ fillRule: "nonzero" }}
+        />
+      </g>
+    </svg>
+  );
+}
+
+const iconMap: Record<string, ReactNode> = {
+  email: <EmailIcon />,
+  mastodon: <MastodonIcon />,
+  github: <GitHubIcon />,
+  rss: <RssIcon />,
+};
+
+type IntroProps = {
+  contentType?: string;
+};
+
+export default function Intro({ contentType }: IntroProps) {
+  const { home } = illustrations;
+  const imageSrc = contentType === "posts" ? home.imgAlt : home.img;
+  const wrapperBase = "img-wrap flex items-center justify-center my-4 w-full";
+  const wrapperClass =
+    contentType === "posts" ? `${wrapperBase} hero-alt` : wrapperBase;
+  const enhancedCopy = enhanceCopy(home.copy);
+
+  return (
+    <section className="intro flex flex-col items-center justify-start max-w-2xl mx-auto my-4 sm:flex-row w-full">
+      <div className={wrapperClass}>
+        <Image
+          src={imageSrc}
+          alt={home.alt}
+          className="max-w-xs w-full"
+          sizes="(min-width: 640px) 20rem, 100vw"
+          priority
+        />
+      </div>
+      <div className="flex flex-col items-start justify-start w-full">
+        <h2 className="md:text-4xl text-3xl">{home.heading}</h2>
+        <p className="text-xl" dangerouslySetInnerHTML={{ __html: enhancedCopy }} />
+        <nav id="contact-list" className="w-auto">
+          <ul className="auto-cols-min gap-x-5 grid grid-rows-1 items-center list-none my-2 p-0">
+            {socialNav.map((item) => {
+              const key = item.label.toLowerCase();
+              const icon = iconMap[key];
+              const linkProps: AnchorHTMLAttributes<HTMLAnchorElement> = {};
+
+              if (item.linkback) {
+                linkProps.target = "_blank";
+                linkProps.rel = "me";
+              } else if (item.external) {
+                linkProps.target = "_blank";
+                linkProps.rel = "noopener noreferrer";
+              }
+
+              return (
+                <li key={item.label} className="m-0 row-start-1">
+                  <a
+                    className="focus:underline hover:underline no-underline text-sm xs:text-base"
+                    href={normalizeLink(item.link)}
+                    data-type="social"
+                    {...linkProps}
+                  >
+                    <span className="sr-only">{item.label}</span>
+                    {icon}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
+    </section>
+  );
+}

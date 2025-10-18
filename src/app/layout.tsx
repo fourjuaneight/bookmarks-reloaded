@@ -48,7 +48,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: criticalCss }}
         />
       </head>
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${inter.variable} antialiased`} data-party='false'>
         <Header siteTitle={metadata.title as string} />
         <main className="grid relative w-full">
           <div className="col-start-2 flex flex-col items-start justify-start row-start-2 w-full">
