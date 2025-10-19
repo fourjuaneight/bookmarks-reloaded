@@ -1,4 +1,5 @@
 import { resolveHref } from "@/utils/resolveHref";
+import { SiteTitle } from "@/components/SiteTitle";
 
 type HeaderProps = {
   siteTitle: string;
@@ -24,12 +25,7 @@ export default function Header({ siteTitle }: HeaderProps) {
           data-underline="true"
           title={siteTitle}
         >
-          <span
-            id="site-title"
-            className="overflow-hidden relative whitespace-nowrap"
-            data-loaded="false"
-            aria-hidden="true"
-          />
+          <SiteTitle />
         </a>
         <nav
           aria-label="Primary navigation"
