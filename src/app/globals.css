@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes grain {
+  0%,
+  100% {
+    background-position: 0% 0%;
+  }
+  20% {
+    background-position: 50% 50%;
+  }
+  40% {
+    background-position: 25% 25%;
+  }
+  60% {
+    background-position: 75% 75%;
+  }
+  80% {
+    background-position: 0% 100%;
+  }
+}
+
 a {
   color: var(--foreground);
   text-decoration: underline;
@@ -690,17 +709,10 @@ a.footnote-backref {
 }
 
 div.noise {
+  animation: grain 0.4s steps(1) infinite;
   background-size: calc(0.125em * 64);
-  bottom: 0;
-  left: 0;
   mix-blend-mode: soft-light;
-  opacity: 0.0375;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 100%;
-  z-index: 20;
+  opacity: 0.375;
 }
 
 @media screen and (max-width: 500px) {

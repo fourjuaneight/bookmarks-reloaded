@@ -6,6 +6,7 @@ import "./reset.css";
 import "./globals.css";
 import Header from "./header";
 import Footer from "./footer";
+import NoiseBackground from "@/components/NoiseBackground";
 
 const criticalCss = readFileSync(
   path.join(process.cwd(), "src/app/critical.css"),
@@ -56,6 +57,7 @@ export default function RootLayout({
           </div>
         </main>
         <Footer siteTitle={metadata.title as string} />
+        <NoiseBackground />
       </body>
     </html>
   );
