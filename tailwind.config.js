@@ -64,7 +64,6 @@ module.exports = {
       sans: ["var(--font-inter)", "Inter", "sans-serif"],
       mdNichrome: ["MD Nichrome", "serif"],
       inter: ["Inter", "sans-serif"],
-      dankMono: ["Dank Mono", "monospace"],
     },
     zIndex: {
       hidden: -1,

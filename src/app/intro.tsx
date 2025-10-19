@@ -197,7 +197,7 @@ export default function Intro({ contentType }: IntroProps) {
         />
       </div>
       <div className="flex flex-col items-start justify-start w-full">
-        <h2 className="md:text-4xl text-3xl">{home.heading}</h2>
+        <h2 className="font-mdNichrome md:text-4xl text-3xl">{home.heading}</h2>
         <p className="text-xl" dangerouslySetInnerHTML={{ __html: enhancedCopy }} />
         <nav id="contact-list" className="w-auto">
           <ul className="auto-cols-min gap-x-5 grid grid-rows-1 items-center list-none my-2 p-0">

@@ -55,7 +55,7 @@ export default function Footer({ siteTitle }: FooterProps) {
               const href = resolveHref(navConfig.homeUrl, item.link);
 
               return (
-                <li key={item.label} className="flex items-center gap-x-1">
+                <li key={item.label} className="flex items-center gap-x-1 m-0 p-0">
                   <a
                     className="focus:underline hover:underline m-0 no-underline p-1 row-start-1 text-sm"
                     data-item={index}

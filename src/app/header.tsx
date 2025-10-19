@@ -19,7 +19,7 @@ export default function Header({ siteTitle }: HeaderProps) {
       <section className="col-start-2 flex items-center justify-between row-start-2 w-full">
         <a
           href={navConfig.homeUrl}
-          className="site-name focus:text-primary focus:no-underline font-bold hover:text-primary hover:no-underline items-center no-underline relative text-center text-foreground text-2xl w-auto"
+          className="site-name focus:text-primary font-mdNichrome focus:no-underline font-bold hover:text-primary hover:no-underline items-center no-underline relative text-center text-foreground text-2xl w-auto"
           data-line="slim"
           data-underline="true"
           title={siteTitle}
@@ -37,9 +37,9 @@ export default function Header({ siteTitle }: HeaderProps) {
         >
           <ul className="flex items-center justify-end gap-x-3 m-0 list-none p-0 sm:gap-x-4">
             {navConfig.header.map((item) => (
-              <li key={item.label} className="relative">
+              <li key={item.label} className="flex relative m-0 p-0">
                 <a
-                  className="focus:no-underline font-bold hover:no-underline no-underline relative text-center text-2xl"
+                  className="focus:no-underline font-mdNichrome font-bold hover:no-underline no-underline relative text-center text-2xl"
                   data-line="slim"
                   data-underline="true"
                   href={resolveHref(navConfig.homeUrl, item.link)}
