@@ -1,6 +1,6 @@
 import { Buffer } from "node:buffer";
 import { randomInt } from "node:crypto";
-import type { CSSProperties } from "react";
+import type { CSSProperties, JSX } from "react";
 
 const DEFAULT_SIZE = 64;
 const MAX_SEED = 10_000;
