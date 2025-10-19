@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 import { config as loadEnv } from "dotenv";
+import { join } from "path";
 
-loadEnv();
+loadEnv({ path: join(process.cwd(), ".env") });
 
 const isProd = process.env.NODE_ENV === "production";
 
