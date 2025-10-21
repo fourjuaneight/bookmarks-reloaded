@@ -1,36 +1,36 @@
 # Bookmarks (Reloaded)
 
-## Getting Started
+## Overview
+Bookmarks (Reloaded) is a statically exported Next.js App Router project deployed on Vercel. It highlights personal bookmarks with client-side filtering, persistent preferences, and accessibility-first UI treatments.
 
-First, run the development server:
+## Architecture
+- **Framework**: Next.js 14 App Router with React 18, strict mode, and static export (`output: "export"`).
+- **Data layer**: [`getArticlesCached`](src/utils/database.ts) queries Neon PostgreSQL via `@neondatabase/serverless`, normalizes archive links, and caches results with `unstable_cache`.
+- **Utilities**: [`sortArticlesData`](src/utils/articles.ts) powers deterministic locale-aware sorting; [`usePersistentState`](src/hooks/usePersistentState.ts) hydrates client state from `localStorage`.
+- **Entry point**: [`Home`](src/app/page.tsx) fetches cached articles at build/runtime (`revalidate = 3600`) and renders the catalog UI.
 
+## UI Composition
+- **Layout**: [`RootLayout`](src/app/layout.tsx) injects critical CSS, global fonts, analytics, and shared chrome (`Header`, `Footer`, `NoiseBackground`).
+- **Table view**: [`Table`](src/components/Table.tsx) implements column sorting, fuzzy search, pagination, and download links with accessible announcements.
+- **Hero**: [`Intro`](src/components/Intro.tsx) swaps illustrations based on context and auto-enriches copy with safe link attributes.
+- **Theming**: Tailwind CSS (`tailwind.config.js`) drives utility classes; bespoke global styles live in [`critical.css`](src/app/critical.css) and [`globals.css`](src/app/globals.css).
+
+## Styling & Assets
+- Custom properties define light/dark palettes and motion preferences.
+- Critical path CSS is inlined during SSR; remaining styles load via Tailwind and PostCSS (`postcss.config.js`).
+- Image assets leverage Next Image static imports for hero illustrations.
+
+## Deployment
+- Target: Vercel static hosting (Exported HTML + assets).
+- Environment: `.env` supplies database connection and public URLs consumed in `next.config.ts`.
+- Analytics: `@vercel/analytics` and `@vercel/speed-insights` are enabled in the root layout.
+
+## Development
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install       # install dependencies
+pnpm dev           # run local dev server at http://localhost:3000
+pnpm lint          # run Next.js + ESLint checks
+pnpm build         # generate the static export
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Node version is pinned via `.nvmrc`. Run `pnpm dlx vercel@latest` to deploy manually if needed.
