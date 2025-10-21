@@ -4,6 +4,7 @@ import { Pool } from "@neondatabase/serverless";
 import { unstable_cache } from "next/cache";
 
 import {
+  ARCHIVE_LINK,
   DEFAULT_ARTICLE_SORT_DIRECTION,
   DEFAULT_ARTICLE_SORT_FIELD,
   type ArticleRow,
@@ -55,7 +56,17 @@ export async function getArticles(options: {
 
   const queryText = `SELECT * FROM articles ORDER BY ${orderExpression} ${directionSql}, title ASC`;
   const { rows } = await pool.query<ArticleRow>(queryText);
-  return rows;
+  return rows.map((row) => {
+    if (!row.archive) {
+      return row;
+    }
+
+    const normalizedArchive = row.archive.replace(/^\/+/, "");
+    return {
+      ...row,
+      archive: `${ARCHIVE_LINK}${normalizedArchive}`,
+    };
+  });
 }
 
 export const getArticlesCached = unstable_cache(

@@ -7,6 +7,8 @@ export type ArticleRow = {
   archive: string | null;
 };
 
+export const ARCHIVE_LINK = `${process.env.BLOB_URL}/${process.env.ARTICLES_PATH}/`;
+
 export const ARTICLE_SORTABLE_FIELDS = [
   "title",
   "creator",

@@ -16,6 +16,7 @@ import {
   sortArticlesData,
 } from "@/utils/articles";
 import { usePersistentState } from "@/hooks/usePersistentState";
+import DocIcon from "./DocIcon";
 
 interface TableProps {
   articles: ArticleRow[];
@@ -38,7 +39,7 @@ const SORTABLE_HEADERS: ReadonlyArray<{
 const DEFAULT_PAGE_SIZE_OPTIONS = Object.freeze([25, 50, 100]);
 
 function normalizePageSizeOptions(
-  options?: ReadonlyArray<number>,
+  options?: ReadonlyArray<number>
 ): readonly number[] {
   const fallback = DEFAULT_PAGE_SIZE_OPTIONS;
 
@@ -50,8 +51,8 @@ function normalizePageSizeOptions(
     new Set(
       options
         .map((option) => Math.trunc(option))
-        .filter((option) => option > 0 && Number.isFinite(option)),
-    ),
+        .filter((option) => option > 0 && Number.isFinite(option))
+    )
   ).sort((a, b) => a - b);
 
   return uniqueSorted.length > 0 ? uniqueSorted : fallback;
@@ -59,7 +60,7 @@ function normalizePageSizeOptions(
 
 function resolveInitialPageSize(
   initial: number | undefined,
-  options: readonly number[],
+  options: readonly number[]
 ): number {
   if (typeof initial === "number") {
     const normalized = Math.trunc(initial);
@@ -83,36 +84,40 @@ export function Table({
 
   const [searchTerm, setSearchTerm] = usePersistentState<string>(
     "bookmarks-table:search",
-    "",
+    ""
   );
 
-  const normalizedSearchTerm = useMemo(() => searchTerm.trim().toLowerCase(), [searchTerm]);
+  const normalizedSearchTerm = useMemo(
+    () => searchTerm.trim().toLowerCase(),
+    [searchTerm]
+  );
 
   const normalizedPageSizeOptions = useMemo(
     () => normalizePageSizeOptions(pageSizeOptions),
-    [pageSizeOptions],
+    [pageSizeOptions]
   );
 
   const resolvedInitialPageSize = useMemo(
     () => resolveInitialPageSize(initialPageSize, normalizedPageSizeOptions),
-    [initialPageSize, normalizedPageSizeOptions],
+    [initialPageSize, normalizedPageSizeOptions]
   );
 
   const [sortField, setSortField] = usePersistentState<ArticleSortField>(
     "bookmarks-table:sort-field",
-    initialSortField,
+    initialSortField
   );
-  const [sortDirection, setSortDirection] = usePersistentState<ArticleSortDirection>(
-    "bookmarks-table:sort-direction",
-    initialSortDirection,
-  );
+  const [sortDirection, setSortDirection] =
+    usePersistentState<ArticleSortDirection>(
+      "bookmarks-table:sort-direction",
+      initialSortDirection
+    );
   const [pageSize, setPageSize] = usePersistentState<number>(
     "bookmarks-table:page-size",
-    resolvedInitialPageSize,
+    resolvedInitialPageSize
   );
   const [currentPage, setCurrentPage] = usePersistentState<number>(
     "bookmarks-table:page",
-    1,
+    1
   );
   const previousInitialSortFieldRef = useRef(initialSortField);
   const previousInitialSortDirectionRef = useRef(initialSortDirection);
@@ -143,7 +148,7 @@ export function Table({
 
     previousInitialSortFieldRef.current = initialSortField;
     setSortField((current) =>
-      current === initialSortField ? current : initialSortField,
+      current === initialSortField ? current : initialSortField
     );
   }, [initialSortField, setSortField]);
 
@@ -154,13 +159,13 @@ export function Table({
 
     previousInitialSortDirectionRef.current = initialSortDirection;
     setSortDirection((current) =>
-      current === initialSortDirection ? current : initialSortDirection,
+      current === initialSortDirection ? current : initialSortDirection
     );
   }, [initialSortDirection, setSortDirection]);
 
   const sortedData = useMemo(
     () => sortArticlesData(articles, sortField, sortDirection),
-    [articles, sortDirection, sortField],
+    [articles, sortDirection, sortField]
   );
 
   const filteredData = useMemo(() => {
@@ -190,8 +195,8 @@ export function Table({
     Math.trunc(
       Number.isFinite(computedPageSize)
         ? computedPageSize
-        : resolvedInitialPageSize,
-    ),
+        : resolvedInitialPageSize
+    )
   );
 
   const totalItems = filteredData.length;
@@ -225,8 +230,10 @@ export function Table({
     return filteredData.slice(start, end);
   }, [effectivePage, filteredData, safePageSize, totalItems]);
 
-  const pageStart = totalItems === 0 ? 0 : (effectivePage - 1) * safePageSize + 1;
-  const pageEnd = totalItems === 0 ? 0 : Math.min(effectivePage * safePageSize, totalItems);
+  const pageStart =
+    totalItems === 0 ? 0 : (effectivePage - 1) * safePageSize + 1;
+  const pageEnd =
+    totalItems === 0 ? 0 : Math.min(effectivePage * safePageSize, totalItems);
   const canGoPrevious = effectivePage > 1;
   const canGoNext = effectivePage < totalPages;
   const showPaginationControls = totalItems > 0;
@@ -237,7 +244,7 @@ export function Table({
 
       if (field === sortField) {
         setSortDirection((prevDirection) =>
-          prevDirection === "asc" ? "desc" : "asc",
+          prevDirection === "asc" ? "desc" : "asc"
         );
         return;
       }
@@ -245,14 +252,14 @@ export function Table({
       setSortField(field);
       setSortDirection("asc");
     },
-    [setCurrentPage, setSortDirection, setSortField, sortField],
+    [setCurrentPage, setSortDirection, setSortField, sortField]
   );
 
   const handlePageSizeChange = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       const numericValue = Number(event.target.value);
       const nextSize = normalizedPageSizeOptions.find(
-        (option) => option === numericValue,
+        (option) => option === numericValue
       );
 
       if (typeof nextSize === "number") {
@@ -260,7 +267,7 @@ export function Table({
         setCurrentPage(1);
       }
     },
-    [normalizedPageSizeOptions, setCurrentPage, setPageSize],
+    [normalizedPageSizeOptions, setCurrentPage, setPageSize]
   );
 
   const goToPreviousPage = useCallback(() => {
@@ -337,7 +344,7 @@ export function Table({
       >
         <li
           id="table-header"
-          className="bg-background-dark hidden grid-cols-4 gap-4 m-0 p-0 text-left text-xs font-semibold uppercase tracking-wide sm:grid"
+          className="bg-background-dark hidden grid-cols-5 gap-4 m-0 p-0 text-left text-xs font-semibold tracking-wide sm:grid"
         >
           {SORTABLE_HEADERS.map(({ key, label }) => {
             const isActive = sortField === key;
@@ -380,6 +387,9 @@ export function Table({
               </button>
             );
           })}
+          <p className="m-0 px-3 py-2 text-foreground text-center text-base w-full">
+            Archive
+          </p>
         </li>
         {totalItems === 0 ? (
           <li
@@ -406,7 +416,7 @@ export function Table({
             return (
               <li
                 key={key}
-                className="grid sm:gap-4 border-t border-meta m-0 p-0 text-sm sm:grid-cols-4"
+                className="grid sm:gap-4 border-t border-meta m-0 p-0 text-sm sm:grid-cols-5"
               >
                 <div className="bg-background-dark flex flex-col gap-1 px-3 py-2">
                   <span className="text-xs font-semibold uppercase tracking-wide sm:hidden">
@@ -446,6 +456,27 @@ export function Table({
                     Tags
                   </span>
                   <span className="text-stone-300">{tags || "—"}</span>
+                </div>
+                <div className="bg-background-dark flex flex-col gap-1 px-3 py-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide sm:hidden">
+                    Archive
+                  </span>
+                  <span className="font-medium" aria-label="Archive link">
+                    {article.archive ? (
+                      <a
+                        className="transition underline hover:text-primary"
+                        data-type="social"
+                        href={article.archive}
+                        rel="noopener noreferrer"
+                        download
+                        aria-hidden="true"
+                      >
+                        <DocIcon />
+                      </a>
+                    ) : (
+                      "-"
+                    )}
+                  </span>
                 </div>
               </li>
             );
