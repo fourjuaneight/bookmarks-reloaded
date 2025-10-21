@@ -1,10 +1,10 @@
 # Bookmarks (Reloaded)
 
 ## Overview
-Bookmarks (Reloaded) is a statically exported Next.js App Router project deployed on Vercel. It highlights personal bookmarks with client-side filtering, persistent preferences, and accessibility-first UI treatments.
+Bookmarks (Reloaded) is a Next.js App Router project deployed on Vercel. It highlights personal bookmarks with client-side filtering, persistent preferences, and accessibility-first UI treatments while leaning on Vercel edge optimizations.
 
 ## Architecture
-- **Framework**: Next.js 14 App Router with React 18, strict mode, and static export (`output: "export"`).
+- **Framework**: Next.js 14 App Router with React 18, strict mode, and Vercel-managed build output.
 - **Data layer**: [`getArticlesCached`](src/utils/database.ts) queries Neon PostgreSQL via `@neondatabase/serverless`, normalizes archive links, and caches results with `unstable_cache`.
 - **Utilities**: [`sortArticlesData`](src/utils/articles.ts) powers deterministic locale-aware sorting; [`usePersistentState`](src/hooks/usePersistentState.ts) hydrates client state from `localStorage`.
 - **Entry point**: [`Home`](src/app/page.tsx) fetches cached articles at build/runtime (`revalidate = 3600`) and renders the catalog UI.
@@ -18,10 +18,11 @@ Bookmarks (Reloaded) is a statically exported Next.js App Router project deploye
 ## Styling & Assets
 - Custom properties define light/dark palettes and motion preferences.
 - Critical path CSS is inlined during SSR; remaining styles load via Tailwind and PostCSS (`postcss.config.js`).
-- Image assets leverage Next Image static imports for hero illustrations.
+- Image imports flow through Next Image, so Vercel serves optimized AVIF/WebP variants.
+- Local font files, like MD Nichrome, load via `next/font/local`, exposing `--font-md-nichrome` for Tailwind utilities and letting Vercel cache hashed font assets indefinitely.
 
 ## Deployment
-- Target: Vercel static hosting (Exported HTML + assets).
+- Target: Vercel hosting with automatic image and font edge caching.
 - Environment: `.env` supplies database connection and public URLs consumed in `next.config.ts`.
 - Analytics: `@vercel/analytics` and `@vercel/speed-insights` are enabled in the root layout.
 
@@ -30,7 +31,7 @@ Bookmarks (Reloaded) is a statically exported Next.js App Router project deploye
 pnpm install       # install dependencies
 pnpm dev           # run local dev server at http://localhost:3000
 pnpm lint          # run Next.js + ESLint checks
-pnpm build         # generate the static export
+pnpm build         # generate the production bundle
 ```
 
 Node version is pinned via `.nvmrc`. Run `pnpm dlx vercel@latest` to deploy manually if needed.

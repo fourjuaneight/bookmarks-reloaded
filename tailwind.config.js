@@ -62,8 +62,8 @@ module.exports = {
     },
     fontFamily: {
       sans: ["var(--font-inter)", "Inter", "sans-serif"],
-      mdNichrome: ["MD Nichrome", "serif"],
-      inter: ["Inter", "sans-serif"],
+      mdNichrome: ["var(--font-md-nichrome)", "MD Nichrome", "serif"],
+      inter: ["var(--font-inter)", "Inter", "sans-serif"],
     },
     zIndex: {
       hidden: -1,

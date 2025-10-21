@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 import { Inter } from "next/font/google";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import localFont from "next/font/local";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -21,6 +22,33 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   weight: ["400", "700"],
+});
+
+const mdNichrome = localFont({
+  variable: "--font-md-nichrome",
+  display: "swap",
+  src: [
+    {
+      path: "../../public/fonts/MD_Nichrome-Black-subset.woff2",
+      style: "normal",
+      weight: "900",
+    },
+    {
+      path: "../../public/fonts/MD_Nichrome-Black-subset.woff",
+      style: "normal",
+      weight: "900",
+    },
+    {
+      path: "../../public/fonts/MD_Nichrome-Dark-subset.woff2",
+      style: "normal",
+      weight: "500",
+    },
+    {
+      path: "../../public/fonts/MD_Nichrome-Dark-subset.woff",
+      style: "normal",
+      weight: "500",
+    },
+  ],
 });
 
 export const metadata: Metadata = {
@@ -53,7 +81,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: criticalCss }}
         />
       </head>
-      <body className={`${inter.variable} antialiased`} data-party='false'>
+      <body
+        className={`${inter.variable} ${mdNichrome.variable} antialiased`}
+        data-party="false"
+      >
         <Header siteTitle={metadata.title as string} />
         <main className="grid relative w-full">
           <div className="col-start-2 flex flex-col items-start justify-start row-start-2 w-full">
