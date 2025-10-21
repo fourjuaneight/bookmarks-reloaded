@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { Analytics } from "@vercel/analytics/next"
 import { Inter } from "next/font/google";
 import "./reset.css";
 import "./globals.css";
@@ -58,6 +59,7 @@ export default function RootLayout({
         </main>
         <Footer siteTitle={metadata.title as string} />
         <NoiseBackground />
+        <Analytics/>
       </body>
     </html>
   );
