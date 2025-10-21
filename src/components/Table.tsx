@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import {
+  type ChangeEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+} from "react";
 
 import {
   type ArticleRow,
@@ -14,6 +21,8 @@ interface TableProps {
   articles: ArticleRow[];
   initialSortField: ArticleSortField;
   initialSortDirection: ArticleSortDirection;
+  pageSizeOptions?: ReadonlyArray<number>;
+  initialPageSize?: number;
 }
 
 const SORTABLE_HEADERS: ReadonlyArray<{
@@ -26,11 +35,61 @@ const SORTABLE_HEADERS: ReadonlyArray<{
   { key: "tags", label: "Tags" },
 ];
 
+const DEFAULT_PAGE_SIZE_OPTIONS = Object.freeze([25, 50, 100]);
+
+function normalizePageSizeOptions(
+  options?: ReadonlyArray<number>,
+): readonly number[] {
+  const fallback = DEFAULT_PAGE_SIZE_OPTIONS;
+
+  if (!options || options.length === 0) {
+    return fallback;
+  }
+
+  const uniqueSorted = Array.from(
+    new Set(
+      options
+        .map((option) => Math.trunc(option))
+        .filter((option) => option > 0 && Number.isFinite(option)),
+    ),
+  ).sort((a, b) => a - b);
+
+  return uniqueSorted.length > 0 ? uniqueSorted : fallback;
+}
+
+function resolveInitialPageSize(
+  initial: number | undefined,
+  options: readonly number[],
+): number {
+  if (typeof initial === "number") {
+    const normalized = Math.trunc(initial);
+    if (options.includes(normalized)) {
+      return normalized;
+    }
+  }
+
+  return options[0] ?? DEFAULT_PAGE_SIZE_OPTIONS[0];
+}
+
 export function Table({
   articles,
   initialSortField,
   initialSortDirection,
+  pageSizeOptions,
+  initialPageSize,
 }: TableProps) {
+  const pageSizeSelectId = useId();
+
+  const normalizedPageSizeOptions = useMemo(
+    () => normalizePageSizeOptions(pageSizeOptions),
+    [pageSizeOptions],
+  );
+
+  const resolvedInitialPageSize = useMemo(
+    () => resolveInitialPageSize(initialPageSize, normalizedPageSizeOptions),
+    [initialPageSize, normalizedPageSizeOptions],
+  );
+
   const [sortField, setSortField] = usePersistentState<ArticleSortField>(
     "bookmarks-table:sort-field",
     initialSortField,
@@ -39,14 +98,49 @@ export function Table({
     "bookmarks-table:sort-direction",
     initialSortDirection,
   );
+  const [pageSize, setPageSize] = usePersistentState<number>(
+    "bookmarks-table:page-size",
+    resolvedInitialPageSize,
+  );
+  const [currentPage, setCurrentPage] = usePersistentState<number>(
+    "bookmarks-table:page",
+    1,
+  );
+  const previousInitialSortFieldRef = useRef(initialSortField);
+  const previousInitialSortDirectionRef = useRef(initialSortDirection);
 
   useEffect(() => {
+    setPageSize((current) => {
+      if (!Number.isFinite(current)) {
+        return resolvedInitialPageSize;
+      }
+
+      const normalized = Math.max(1, Math.trunc(current));
+      if (!normalizedPageSizeOptions.includes(normalized)) {
+        return resolvedInitialPageSize;
+      }
+
+      return normalized;
+    });
+  }, [normalizedPageSizeOptions, resolvedInitialPageSize, setPageSize]);
+
+  useEffect(() => {
+    if (previousInitialSortFieldRef.current === initialSortField) {
+      return;
+    }
+
+    previousInitialSortFieldRef.current = initialSortField;
     setSortField((current) =>
       current === initialSortField ? current : initialSortField,
     );
   }, [initialSortField, setSortField]);
 
   useEffect(() => {
+    if (previousInitialSortDirectionRef.current === initialSortDirection) {
+      return;
+    }
+
+    previousInitialSortDirectionRef.current = initialSortDirection;
     setSortDirection((current) =>
       current === initialSortDirection ? current : initialSortDirection,
     );
@@ -57,8 +151,59 @@ export function Table({
     [articles, sortDirection, sortField],
   );
 
+  const computedPageSize = normalizedPageSizeOptions.includes(pageSize)
+    ? pageSize
+    : resolvedInitialPageSize;
+  const safePageSize = Math.max(
+    1,
+    Math.trunc(
+      Number.isFinite(computedPageSize)
+        ? computedPageSize
+        : resolvedInitialPageSize,
+    ),
+  );
+
+  const totalItems = sortedData.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / safePageSize));
+  const effectivePage = Number.isFinite(currentPage)
+    ? Math.min(Math.max(Math.trunc(currentPage), 1), totalPages)
+    : 1;
+
+  useEffect(() => {
+    setCurrentPage((current) => {
+      if (!Number.isFinite(current)) {
+        return 1;
+      }
+
+      const normalized = Math.max(1, Math.trunc(current));
+      if (normalized > totalPages) {
+        return totalPages;
+      }
+
+      return normalized;
+    });
+  }, [setCurrentPage, totalPages]);
+
+  const paginatedData = useMemo(() => {
+    if (totalItems === 0) {
+      return [] as ArticleRow[];
+    }
+
+    const start = (effectivePage - 1) * safePageSize;
+    const end = start + safePageSize;
+    return sortedData.slice(start, end);
+  }, [effectivePage, safePageSize, sortedData, totalItems]);
+
+  const pageStart = totalItems === 0 ? 0 : (effectivePage - 1) * safePageSize + 1;
+  const pageEnd = totalItems === 0 ? 0 : Math.min(effectivePage * safePageSize, totalItems);
+  const canGoPrevious = effectivePage > 1;
+  const canGoNext = effectivePage < totalPages;
+  const showPaginationControls = totalItems > 0;
+
   const handleHeaderClick = useCallback(
     (field: ArticleSortField) => {
+      setCurrentPage(1);
+
       if (field === sortField) {
         setSortDirection((prevDirection) =>
           prevDirection === "asc" ? "desc" : "asc",
@@ -69,8 +214,45 @@ export function Table({
       setSortField(field);
       setSortDirection("asc");
     },
-    [setSortDirection, setSortField, sortField],
+    [setCurrentPage, setSortDirection, setSortField, sortField],
   );
+
+  const handlePageSizeChange = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      const numericValue = Number(event.target.value);
+      const nextSize = normalizedPageSizeOptions.find(
+        (option) => option === numericValue,
+      );
+
+      if (typeof nextSize === "number") {
+        setPageSize(nextSize);
+        setCurrentPage(1);
+      }
+    },
+    [normalizedPageSizeOptions, setCurrentPage, setPageSize],
+  );
+
+  const goToPreviousPage = useCallback(() => {
+    setCurrentPage((prev) => {
+      if (!Number.isFinite(prev)) {
+        return 1;
+      }
+
+      const normalized = Math.max(1, Math.trunc(prev));
+      return Math.max(1, normalized - 1);
+    });
+  }, [setCurrentPage]);
+
+  const goToNextPage = useCallback(() => {
+    setCurrentPage((prev) => {
+      if (!Number.isFinite(prev)) {
+        return Math.min(totalPages, 1);
+      }
+
+      const normalized = Math.max(1, Math.trunc(prev));
+      return Math.min(totalPages, normalized + 1);
+    });
+  }, [setCurrentPage, totalPages]);
 
   const activeSortLabel = useMemo(() => {
     const header = SORTABLE_HEADERS.find(({ key }) => key === sortField);
@@ -90,7 +272,11 @@ export function Table({
           {activeSortLabel}
         </p>
       ) : null}
-      <ul className="backdrop-blur bg-background border border-meta overflow-hidden rounded shadow-sm w-full">
+      <ul
+        className={`backdrop-blur bg-background border border-meta overflow-hidden shadow-sm w-full ${
+          showPaginationControls ? "rounded-t" : "rounded"
+        }`}
+      >
         <li
           id="table-header"
           className="bg-background-dark hidden grid-cols-4 gap-4 m-0 p-0 text-left text-xs font-semibold uppercase tracking-wide sm:grid"
@@ -128,7 +314,7 @@ export function Table({
                   <span>{label}</span>
                   <span
                     aria-hidden="true"
-                    className="bg-background leading-none ml-4 mr-0 my-0 px-2 py-1 rounded-full text-tertiary text-[0.5rem]"
+                    className="bg-background leading-none ml-4 mr-0 my-0 px-2 py-1 rounded-full text-meta text-[0.5rem]"
                   >
                     {indicatorText}
                   </span>
@@ -137,7 +323,7 @@ export function Table({
             );
           })}
         </li>
-        {sortedData.length === 0 ? (
+        {totalItems === 0 ? (
           <li
             id="table-body-empty"
             className="m-0 px-2 py-3 text-center text-sm"
@@ -145,12 +331,13 @@ export function Table({
             No articles found.
           </li>
         ) : (
-          sortedData.map((article, index) => {
+          paginatedData.map((article, index) => {
+            const absoluteIndex = (effectivePage - 1) * safePageSize + index;
             const key =
               article.title ??
               article.archive ??
               article.url ??
-              `article-${index}`;
+              `article-${absoluteIndex}`;
 
             const tags = Array.isArray(article.tags)
               ? article.tags.join(", ")
@@ -159,7 +346,6 @@ export function Table({
             return (
               <li
                 key={key}
-                id="table-body-row"
                 className="grid sm:gap-4 border-t border-meta m-0 p-0 text-sm sm:grid-cols-4"
               >
                 <div className="bg-background-dark flex flex-col gap-1 px-3 py-2">
@@ -206,6 +392,57 @@ export function Table({
           })
         )}
       </ul>
+      {showPaginationControls ? (
+        <nav
+          aria-label="Pagination"
+          className="bg-background-dark border border-meta border-t-0 flex flex-col gap-3 rounded-b px-3 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p className="m-0 p-0 text-meta whitespace-nowrap">
+            {pageStart}-{pageEnd} of {totalItems}
+          </p>
+          <div className="flex items-center gap-2">
+            <label htmlFor={pageSizeSelectId} className="text-meta sr-only">
+              Rows per page
+            </label>
+            <select
+              id={pageSizeSelectId}
+              value={computedPageSize}
+              onChange={handlePageSizeChange}
+              className="bg-background border border-meta px-2 py-1 text-foreground text-sm"
+            >
+              {normalizedPageSizeOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 w-full">
+            <div className="flex items-center gap-2 ml-auto">
+              <button
+                type="button"
+                onClick={goToPreviousPage}
+                disabled={!canGoPrevious}
+                className="border border-meta m-0 px-3 py-1 rounded text-sm transition w-24 focus:!bg-primary hover:!bg-primary disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <p className="m-0 p-0 text-meta">
+                <span className="sr-only">Page </span>
+                {effectivePage} of {totalPages}
+              </p>
+              <button
+                type="button"
+                onClick={goToNextPage}
+                disabled={!canGoNext}
+                className="border border-meta m-0 px-3 py-1 rounded text-sm transition w-24 focus:!bg-primary hover:!bg-primary disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </nav>
+      ) : null}
     </section>
   );
 }
