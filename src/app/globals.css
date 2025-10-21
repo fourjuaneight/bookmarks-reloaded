@@ -711,8 +711,8 @@ a.footnote-backref {
 div.noise {
   animation: grain 0.4s steps(1) infinite;
   background-size: calc(0.125em * 64);
-  mix-blend-mode: soft-light;
-  opacity: 0.375;
+  /* mix-blend-mode: soft-light; */
+  opacity: 0.075;
 }
 
 @media screen and (max-width: 500px) {
