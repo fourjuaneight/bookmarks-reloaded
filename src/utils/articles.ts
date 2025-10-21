@@ -18,7 +18,7 @@ export type ArticleSortField = (typeof ARTICLE_SORTABLE_FIELDS)[number];
 export type ArticleSortDirection = "asc" | "desc";
 
 export const DEFAULT_ARTICLE_SORT_FIELD: ArticleSortField = "title";
-export const DEFAULT_ARTICLE_SORT_DIRECTION: ArticleSortDirection = "desc";
+export const DEFAULT_ARTICLE_SORT_DIRECTION: ArticleSortDirection = "asc";
 
 export function isArticleSortField(value: unknown): value is ArticleSortField {
   return (
