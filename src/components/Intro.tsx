@@ -46,6 +46,7 @@ const socialNav: SocialNavItem[] = [
   { label: "RSS", link: "/posts/index.xml" },
 ];
 
+// Normalize relative links so they resolve correctly under custom base paths.
 const normalizeLink = (link: string) => {
   if (link.startsWith("http") || link.startsWith("mailto:")) {
     return link;
@@ -53,6 +54,7 @@ const normalizeLink = (link: string) => {
   return link.startsWith("/") ? link : `/${link}`;
 };
 
+// Inject safe attributes on author-provided anchor tags before letting them hydrate.
 const enhanceCopy = (copy: string) =>
   copy.replace(/<a/g, "<a rel=\"noopener noreferrer\" target=\"_blank\"");
 
@@ -179,6 +181,7 @@ type IntroProps = {
 
 export default function Intro({ contentType }: IntroProps) {
   const { home } = illustrations;
+  // Swap to the simplified illustration on post pages to keep the layout calmer.
   const imageSrc = contentType === "posts" ? home.imgAlt : home.img;
   const wrapperBase = "img-wrap flex items-center justify-center my-4 w-full";
   const wrapperClass =
@@ -206,6 +209,7 @@ export default function Intro({ contentType }: IntroProps) {
               const icon = iconMap[key];
               const linkProps: AnchorHTMLAttributes<HTMLAnchorElement> = {};
 
+              // Only add rich metadata when the provider calls for it.
               if (item.linkback) {
                 linkProps.target = "_blank";
                 linkProps.rel = "me";

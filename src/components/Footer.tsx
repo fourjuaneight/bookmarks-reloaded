@@ -4,6 +4,7 @@ type FooterProps = {
   siteTitle: string;
 };
 
+// Runtime config keeps preview environments pointing at the right origin.
 const navConfig = {
   homeUrl: process.env.NEXT_PUBLIC_HOME_URL ?? "/",
   ghUrl: process.env.NEXT_PUBLIC_GH_URL ?? "/",
@@ -28,6 +29,7 @@ export default function Footer({ siteTitle }: FooterProps) {
         >
           <a
             className="focus:underline hover:underline no-underline m-0 p-1 row-start-1 text-sm whitespace-nowrap"
+            // Link back to the published LICENSE so derivative works can confirm terms.
             href={`${navConfig.ghUrl}/bookmarks-reloaded/blob/main/LICENSE`}
             target="_blank"
             rel="noopener noreferrer"
@@ -52,6 +54,7 @@ export default function Footer({ siteTitle }: FooterProps) {
         >
           <ul className="flex flex-wrap items-center justify-start gap-x-1 m-0 list-none p-0">
             {footerLinks.map((item, index) => {
+              // Resolve links against homeUrl to support custom base paths.
               const href = resolveHref(navConfig.homeUrl, item.link);
 
               return (

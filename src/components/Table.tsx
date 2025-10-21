@@ -38,6 +38,7 @@ const SORTABLE_HEADERS: ReadonlyArray<{
 
 const DEFAULT_PAGE_SIZE_OPTIONS = Object.freeze([25, 50, 100]);
 
+// Sanitize consumer-provided page sizes before rendering them in the UI controls.
 function normalizePageSizeOptions(
   options?: ReadonlyArray<number>
 ): readonly number[] {
@@ -58,6 +59,7 @@ function normalizePageSizeOptions(
   return uniqueSorted.length > 0 ? uniqueSorted : fallback;
 }
 
+// Align the initial page size with the sanitized options list.
 function resolveInitialPageSize(
   initial: number | undefined,
   options: readonly number[]
@@ -72,6 +74,7 @@ function resolveInitialPageSize(
   return options[0] ?? DEFAULT_PAGE_SIZE_OPTIONS[0];
 }
 
+// Render the searchable, sortable, and paginated article table client side.
 export function Table({
   articles,
   initialSortField,
@@ -123,10 +126,12 @@ export function Table({
   const previousInitialSortDirectionRef = useRef(initialSortDirection);
 
   useEffect(() => {
+    // Reset pagination whenever the filter changes so results stay visible.
     setCurrentPage(1);
   }, [normalizedSearchTerm, setCurrentPage]);
 
   useEffect(() => {
+    // Clamp the persisted page size to the latest valid options.
     setPageSize((current) => {
       if (!Number.isFinite(current)) {
         return resolvedInitialPageSize;
@@ -146,6 +151,7 @@ export function Table({
       return;
     }
 
+    // Realign the persisted sort when the server-provided default changes.
     previousInitialSortFieldRef.current = initialSortField;
     setSortField((current) =>
       current === initialSortField ? current : initialSortField
@@ -157,6 +163,7 @@ export function Table({
       return;
     }
 
+    // Same idea as field above—keep the initial direction in sync with SSR defaults.
     previousInitialSortDirectionRef.current = initialSortDirection;
     setSortDirection((current) =>
       current === initialSortDirection ? current : initialSortDirection
@@ -187,6 +194,7 @@ export function Table({
     });
   }, [normalizedSearchTerm, sortedData]);
 
+  // Persisted page size might be stale; fall back to a safe value if so.
   const computedPageSize = normalizedPageSizeOptions.includes(pageSize)
     ? pageSize
     : resolvedInitialPageSize;
@@ -211,6 +219,7 @@ export function Table({
         return 1;
       }
 
+      // Collapse too-large pages when the dataset shrinks (e.g. via search).
       const normalized = Math.max(1, Math.trunc(current));
       if (normalized > totalPages) {
         return totalPages;
@@ -240,9 +249,11 @@ export function Table({
 
   const handleHeaderClick = useCallback(
     (field: ArticleSortField) => {
+      // Toggle sort direction or switch to a new column while keeping pagination stable.
       setCurrentPage(1);
 
       if (field === sortField) {
+        // Toggle direction when the same header is selected twice.
         setSortDirection((prevDirection) =>
           prevDirection === "asc" ? "desc" : "asc"
         );
@@ -257,6 +268,7 @@ export function Table({
 
   const handlePageSizeChange = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
+      // Persist the new page size and reset to the first page when the user changes it.
       const numericValue = Number(event.target.value);
       const nextSize = normalizedPageSizeOptions.find(
         (option) => option === numericValue
@@ -271,28 +283,33 @@ export function Table({
   );
 
   const goToPreviousPage = useCallback(() => {
+    // Step one page back while guarding against corrupted persisted state.
     setCurrentPage((prev) => {
       if (!Number.isFinite(prev)) {
         return 1;
       }
 
+      // Guard against dropping below the first page when state is corrupted.
       const normalized = Math.max(1, Math.trunc(prev));
       return Math.max(1, normalized - 1);
     });
   }, [setCurrentPage]);
 
   const goToNextPage = useCallback(() => {
+    // Step forward without exceeding the current total page count.
     setCurrentPage((prev) => {
       if (!Number.isFinite(prev)) {
         return Math.min(totalPages, 1);
       }
 
+      // Keep the index within the current page count even if totals change mid-session.
       const normalized = Math.max(1, Math.trunc(prev));
       return Math.min(totalPages, normalized + 1);
     });
   }, [setCurrentPage, totalPages]);
 
   const activeSortLabel = useMemo(() => {
+    // Expose the current sort state for screen readers.
     const header = SORTABLE_HEADERS.find(({ key }) => key === sortField);
     if (!header) {
       return null;

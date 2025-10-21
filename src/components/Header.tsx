@@ -5,6 +5,7 @@ type HeaderProps = {
   siteTitle: string;
 };
 
+// Allow deployments on alternate hostnames without hardcoding absolute URLs.
 const navConfig = {
   homeUrl: process.env.NEXT_PUBLIC_HOME_URL ?? "/",
   header: [
@@ -25,6 +26,7 @@ export default function Header({ siteTitle }: HeaderProps) {
           data-underline="true"
           title={siteTitle}
         >
+          {/* Animated via CSS; keeping the DOM minimal avoids layout thrash. */}
           <SiteTitle />
         </a>
         <nav
@@ -38,6 +40,7 @@ export default function Header({ siteTitle }: HeaderProps) {
                   className="focus:no-underline font-mdNichrome font-bold hover:no-underline no-underline relative text-center text-2xl"
                   data-line="slim"
                   data-underline="true"
+                  // Resolve against homeUrl so preview deployments honor custom base paths.
                   href={resolveHref(navConfig.homeUrl, item.link)}
                 >
                   <span>{item.label}</span>

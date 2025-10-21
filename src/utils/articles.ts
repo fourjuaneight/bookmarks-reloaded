@@ -22,6 +22,7 @@ export type ArticleSortDirection = "asc" | "desc";
 export const DEFAULT_ARTICLE_SORT_FIELD: ArticleSortField = "title";
 export const DEFAULT_ARTICLE_SORT_DIRECTION: ArticleSortDirection = "asc";
 
+// Validate arbitrary input from query params before using it for sorting.
 export function isArticleSortField(value: unknown): value is ArticleSortField {
   return (
     typeof value === "string" &&
@@ -29,6 +30,7 @@ export function isArticleSortField(value: unknown): value is ArticleSortField {
   );
 }
 
+// Coerce untrusted input to a supported sort direction while preserving the fallback.
 export function normalizeArticleSortDirection(
   value: unknown,
   fallback: ArticleSortDirection = DEFAULT_ARTICLE_SORT_DIRECTION
@@ -52,6 +54,7 @@ const collator = new Intl.Collator("en", {
 });
 
 function normalizeString(value: string | null | undefined): string {
+  // Standardize strings for case-insensitive comparisons.
   return value?.trim().toLowerCase() ?? "";
 }
 
@@ -59,6 +62,7 @@ function extractComparableValue(
   article: ArticleRow,
   field: ArticleSortField,
 ): string {
+  // Derive the string we can safely compare for the requested column.
   switch (field) {
     case "title":
       return normalizeString(article.title);
@@ -77,6 +81,7 @@ function extractComparableValue(
 }
 
 function buildFallbackKey(article: ArticleRow): string {
+  // Produce a stable fallback key to keep ordering deterministic.
   const primary = normalizeString(article.title);
   const byUrl = normalizeString(article.url);
   const byArchive = normalizeString(article.archive);
@@ -88,6 +93,7 @@ export function sortArticlesData(
   field: ArticleSortField,
   direction: ArticleSortDirection,
 ): ArticleRow[] {
+  // Sort articles client side while mirroring the server side tie breakers.
   const directionMultiplier = direction === "asc" ? 1 : -1;
 
   return [...articles].sort((a, b) => {

@@ -41,6 +41,7 @@ export async function getArticles(options: {
   sortBy?: ArticleSortField;
   sortDirection?: ArticleSortDirection;
 } = {}): Promise<ArticleRow[]> {
+  // Fetch articles from Postgres with sanitized ordering and normalized archive links.
   const sortField = options.sortBy ?? DEFAULT_ARTICLE_SORT_FIELD;
   const orderExpression =
     SORT_COLUMN_SQL[
@@ -70,6 +71,7 @@ export async function getArticles(options: {
 }
 
 export const getArticlesCached = unstable_cache(
+  // Wrap the raw query in Next.js caching to avoid hitting the database on every request.
   async (options: {
     sortBy?: ArticleSortField;
     sortDirection?: ArticleSortDirection;
