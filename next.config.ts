@@ -10,11 +10,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   compress: true,
   poweredByHeader: false,
-  output: "export",
   trailingSlash: true,
   images: {
     formats: ["image/avif", "image/webp"],
-    unoptimized: true,
   },
   compiler: {
     removeConsole: isProd ? { exclude: ["error", "warn"] } : false,
