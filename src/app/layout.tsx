@@ -3,11 +3,14 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { Analytics } from "@vercel/analytics/next"
 import { Inter } from "next/font/google";
-import "./reset.css";
-import "./globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next"
+
 import Header from "./header";
 import Footer from "./footer";
 import NoiseBackground from "@/components/NoiseBackground";
+
+import "./reset.css";
+import "./globals.css";
 
 const criticalCss = readFileSync(
   path.join(process.cwd(), "src/app/critical.css"),
@@ -60,6 +63,7 @@ export default function RootLayout({
         <Footer siteTitle={metadata.title as string} />
         <NoiseBackground />
         <Analytics/>
+        <SpeedInsights />
       </body>
     </html>
   );
