@@ -196,7 +196,7 @@ export default function Intro({ contentType }: IntroProps) {
           alt={home.alt}
           className="max-w-xs w-full"
           sizes="(min-width: 640px) 20rem, 100vw"
-          priority
+          loading="lazy"
         />
       </div>
       <div className="flex flex-col items-start justify-start w-full">
