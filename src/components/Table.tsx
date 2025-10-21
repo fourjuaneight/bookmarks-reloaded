@@ -1,27 +1,153 @@
-import { ArticleRow } from "@/utils/database";
+"use client";
+
+import { useCallback, useEffect, useMemo } from "react";
+
+import {
+  type ArticleRow,
+  type ArticleSortDirection,
+  type ArticleSortField,
+  sortArticlesData,
+} from "@/utils/articles";
+import { usePersistentState } from "@/hooks/usePersistentState";
 
 interface TableProps {
   articles: ArticleRow[];
+  initialSortField: ArticleSortField;
+  initialSortDirection: ArticleSortDirection;
 }
 
-export function Table({ articles }: TableProps) {
+const SORTABLE_HEADERS: ReadonlyArray<{
+  key: ArticleSortField;
+  label: string;
+}> = [
+  { key: "title", label: "Title" },
+  { key: "creator", label: "Creator" },
+  { key: "site", label: "Site" },
+  { key: "tags", label: "Tags" },
+];
+
+export function Table({
+  articles,
+  initialSortField,
+  initialSortDirection,
+}: TableProps) {
+  const [sortField, setSortField] = usePersistentState<ArticleSortField>(
+    "bookmarks-table:sort-field",
+    initialSortField,
+  );
+  const [sortDirection, setSortDirection] = usePersistentState<ArticleSortDirection>(
+    "bookmarks-table:sort-direction",
+    initialSortDirection,
+  );
+
+  useEffect(() => {
+    setSortField((current) =>
+      current === initialSortField ? current : initialSortField,
+    );
+  }, [initialSortField, setSortField]);
+
+  useEffect(() => {
+    setSortDirection((current) =>
+      current === initialSortDirection ? current : initialSortDirection,
+    );
+  }, [initialSortDirection, setSortDirection]);
+
+  const sortedData = useMemo(
+    () => sortArticlesData(articles, sortField, sortDirection),
+    [articles, sortDirection, sortField],
+  );
+
+  const handleHeaderClick = useCallback(
+    (field: ArticleSortField) => {
+      if (field === sortField) {
+        setSortDirection((prevDirection) =>
+          prevDirection === "asc" ? "desc" : "asc",
+        );
+        return;
+      }
+
+      setSortField(field);
+      setSortDirection("asc");
+    },
+    [setSortDirection, setSortField, sortField],
+  );
+
+  const activeSortLabel = useMemo(() => {
+    const header = SORTABLE_HEADERS.find(({ key }) => key === sortField);
+    if (!header) {
+      return null;
+    }
+
+    return `${header.label} sorted ${
+      sortDirection === "asc" ? "ascending" : "descending"
+    }`;
+  }, [sortDirection, sortField]);
+
   return (
-    <div className="w-full">
-      <ul className="bg-background w-full overflow-hidden rounded border border-stone-200/60 shadow-sm backdrop-blur">
-        <li className="bg-background-dark hidden grid-cols-4 gap-4 m-0 p-0 text-left text-xs font-semibold uppercase tracking-wide sm:grid">
-          <span className="px-3 py-2">Title</span>
-          <span className="px-3 py-2">Creator</span>
-          <span className="px-3 py-2">Site</span>
-          <span className="px-3 py-2">Tags</span>
+    <section className="w-full">
+      {activeSortLabel ? (
+        <p className="sr-only" aria-live="polite">
+          {activeSortLabel}
+        </p>
+      ) : null}
+      <ul className="backdrop-blur bg-background border border-meta overflow-hidden rounded shadow-sm w-full">
+        <li
+          id="table-header"
+          className="bg-background-dark hidden grid-cols-4 gap-4 m-0 p-0 text-left text-xs font-semibold uppercase tracking-wide sm:grid"
+        >
+          {SORTABLE_HEADERS.map(({ key, label }) => {
+            const isActive = sortField === key;
+            const nextDirection: ArticleSortDirection =
+              isActive && sortDirection === "asc" ? "desc" : "asc";
+
+            const indicatorText = isActive
+              ? sortDirection === "asc"
+                ? "ASC"
+                : "DESC"
+              : "—";
+
+            const ariaDescription = isActive
+              ? `${label}, currently sorted ${
+                  sortDirection === "asc" ? "ascending" : "descending"
+                }. Activate to switch to ${
+                  nextDirection === "asc" ? "ascending" : "descending"
+                }.`
+              : `${label}, activate to sort ascending.`;
+
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => handleHeaderClick(key)}
+                className={`!bg-transparent m-0 px-3 py-2 text-foreground text-left transition hover:text-primary ${
+                  isActive ? "text-primary" : ""
+                } w-full`}
+                aria-label={ariaDescription}
+              >
+                <span className="flex items-center justify-between gap-2">
+                  <span>{label}</span>
+                  <span
+                    aria-hidden="true"
+                    className="bg-background leading-none ml-4 mr-0 my-0 px-2 py-1 rounded-full text-tertiary text-[0.5rem]"
+                  >
+                    {indicatorText}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
         </li>
-        {articles.length === 0 ? (
-          <li className="m-0 px-2 py-3 text-center text-sm">
+        {sortedData.length === 0 ? (
+          <li
+            id="table-body-empty"
+            className="m-0 px-2 py-3 text-center text-sm"
+          >
             No articles found.
           </li>
         ) : (
-          articles.map((article, index) => {
+          sortedData.map((article, index) => {
             const key =
-              (article.id ? String(article.id) : null) ??
+              article.title ??
               article.archive ??
               article.url ??
               `article-${index}`;
@@ -33,6 +159,7 @@ export function Table({ articles }: TableProps) {
             return (
               <li
                 key={key}
+                id="table-body-row"
                 className="grid sm:gap-4 border-t border-meta m-0 p-0 text-sm sm:grid-cols-4"
               >
                 <div className="bg-background-dark flex flex-col gap-1 px-3 py-2">
@@ -79,6 +206,6 @@ export function Table({ articles }: TableProps) {
           })
         )}
       </ul>
-    </div>
+    </section>
   );
 }

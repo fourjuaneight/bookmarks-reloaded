@@ -1,17 +1,23 @@
 import "server-only";
 
 import { Pool } from "@neondatabase/serverless";
+import { unstable_cache } from "next/cache";
 
-export type ArticleRow = {
-  id?: number;
-  title: string | null;
-  creator: string | null;
-  site: string | null;
-  tags: string[] | null;
-  url: string | null;
-  archive: string | null;
-  created_at?: Date | null;
-  updated_at?: Date | null;
+import {
+  DEFAULT_ARTICLE_SORT_DIRECTION,
+  DEFAULT_ARTICLE_SORT_FIELD,
+  type ArticleRow,
+  type ArticleSortDirection,
+  type ArticleSortField,
+  isArticleSortField,
+  normalizeArticleSortDirection,
+} from "./articles";
+
+const SORT_COLUMN_SQL: Record<ArticleSortField, string> = {
+  title: "LOWER(COALESCE(title, ''))",
+  creator: "LOWER(COALESCE(creator, ''))",
+  site: "LOWER(COALESCE(site, ''))",
+  tags: "LOWER(COALESCE(array_to_string(tags, ', '), ''))",
 };
 
 declare global {
@@ -30,9 +36,38 @@ if (!globalThis.__neonPool__) {
   globalThis.__neonPool__ = pool;
 }
 
-export async function getArticles(): Promise<ArticleRow[]> {
-  const { rows } = await pool.query<ArticleRow>("SELECT * FROM articles");
+export async function getArticles(options: {
+  sortBy?: ArticleSortField;
+  sortDirection?: ArticleSortDirection;
+} = {}): Promise<ArticleRow[]> {
+  const sortField = options.sortBy ?? DEFAULT_ARTICLE_SORT_FIELD;
+  const orderExpression =
+    SORT_COLUMN_SQL[
+      isArticleSortField(sortField)
+        ? sortField
+        : DEFAULT_ARTICLE_SORT_FIELD
+    ];
+  const direction = normalizeArticleSortDirection(
+    options.sortDirection,
+    DEFAULT_ARTICLE_SORT_DIRECTION,
+  );
+  const directionSql = direction === "asc" ? "ASC" : "DESC";
+
+  const queryText = `SELECT * FROM articles ORDER BY ${orderExpression} ${directionSql}, title ASC`;
+  const { rows } = await pool.query<ArticleRow>(queryText);
   return rows;
 }
+
+export const getArticlesCached = unstable_cache(
+  async (options: {
+    sortBy?: ArticleSortField;
+    sortDirection?: ArticleSortDirection;
+  } = {}) => getArticles(options),
+  ["articles"],
+  {
+    revalidate: 3600,
+    tags: ["articles"],
+  },
+);
 
 export const dbPool = pool;

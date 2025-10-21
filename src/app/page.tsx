@@ -1,9 +1,16 @@
-import { getArticles } from "@/utils/database";
+import { getArticlesCached } from "@/utils/database";
+import {
+  DEFAULT_ARTICLE_SORT_DIRECTION,
+  DEFAULT_ARTICLE_SORT_FIELD,
+} from "@/utils/articles";
 import Intro from "./intro";
 import { Table } from "@/components/Table";
 
 export default async function Home() {
-  const articles = await getArticles();
+  const articles = await getArticlesCached({
+    sortBy: DEFAULT_ARTICLE_SORT_FIELD,
+    sortDirection: DEFAULT_ARTICLE_SORT_DIRECTION,
+  });
 
   return (
     <>
@@ -20,11 +27,17 @@ export default async function Home() {
       <p>
         As we collect bookmarks, we quickly recognize that many online artifacts
         have vanished. Links break, content evaporates—so, is stuff online worth
-        saving? No idea. But I'm a digital hoarder, so here's my hoard of links.
-        Enjoy!
+        saving? No idea. But I&apos;m a digital hoarder, so here&apos;s my hoard of
+        links. Enjoy!
       </p>
-      <Table articles={articles} />
+      <Table
+        articles={articles}
+        initialSortField={DEFAULT_ARTICLE_SORT_FIELD}
+        initialSortDirection={DEFAULT_ARTICLE_SORT_DIRECTION}
+      />
       <Intro />
     </>
   );
 }
+
+export const revalidate = 3600;
