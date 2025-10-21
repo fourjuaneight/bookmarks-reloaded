@@ -79,6 +79,14 @@ export function Table({
   initialPageSize,
 }: TableProps) {
   const pageSizeSelectId = useId();
+  const searchInputId = useId();
+
+  const [searchTerm, setSearchTerm] = usePersistentState<string>(
+    "bookmarks-table:search",
+    "",
+  );
+
+  const normalizedSearchTerm = useMemo(() => searchTerm.trim().toLowerCase(), [searchTerm]);
 
   const normalizedPageSizeOptions = useMemo(
     () => normalizePageSizeOptions(pageSizeOptions),
@@ -108,6 +116,10 @@ export function Table({
   );
   const previousInitialSortFieldRef = useRef(initialSortField);
   const previousInitialSortDirectionRef = useRef(initialSortDirection);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [normalizedSearchTerm, setCurrentPage]);
 
   useEffect(() => {
     setPageSize((current) => {
@@ -151,6 +163,25 @@ export function Table({
     [articles, sortDirection, sortField],
   );
 
+  const filteredData = useMemo(() => {
+    if (normalizedSearchTerm === "") {
+      return sortedData;
+    }
+
+    return sortedData.filter((article) => {
+      const haystack = [
+        article.title,
+        article.creator,
+        article.site,
+        Array.isArray(article.tags) ? article.tags.join(", ") : article.tags,
+      ]
+        .filter(Boolean)
+        .map((value) => String(value).toLowerCase());
+
+      return haystack.some((value) => value.includes(normalizedSearchTerm));
+    });
+  }, [normalizedSearchTerm, sortedData]);
+
   const computedPageSize = normalizedPageSizeOptions.includes(pageSize)
     ? pageSize
     : resolvedInitialPageSize;
@@ -163,7 +194,7 @@ export function Table({
     ),
   );
 
-  const totalItems = sortedData.length;
+  const totalItems = filteredData.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / safePageSize));
   const effectivePage = Number.isFinite(currentPage)
     ? Math.min(Math.max(Math.trunc(currentPage), 1), totalPages)
@@ -191,8 +222,8 @@ export function Table({
 
     const start = (effectivePage - 1) * safePageSize;
     const end = start + safePageSize;
-    return sortedData.slice(start, end);
-  }, [effectivePage, safePageSize, sortedData, totalItems]);
+    return filteredData.slice(start, end);
+  }, [effectivePage, filteredData, safePageSize, totalItems]);
 
   const pageStart = totalItems === 0 ? 0 : (effectivePage - 1) * safePageSize + 1;
   const pageEnd = totalItems === 0 ? 0 : Math.min(effectivePage * safePageSize, totalItems);
@@ -267,6 +298,33 @@ export function Table({
 
   return (
     <section className="w-full">
+      <form
+        role="search"
+        className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center"
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <label htmlFor={searchInputId} className="sr-only">
+          Search articles
+        </label>
+        <input
+          id={searchInputId}
+          type="search"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          placeholder="Search articles"
+          className="bg-background border border-meta flex-1 px-3 py-2 rounded text-foreground text-base focus:border-solid hover:border-solid"
+          autoComplete="off"
+        />
+        {searchTerm ? (
+          <button
+            type="button"
+            className="border border-meta m-0 px-3 py-2 rounded text-sm transition focus:!bg-primary hover:!bg-primary"
+            onClick={() => setSearchTerm("")}
+          >
+            Clear
+          </button>
+        ) : null}
+      </form>
       {activeSortLabel ? (
         <p className="sr-only" aria-live="polite">
           {activeSortLabel}
@@ -328,7 +386,9 @@ export function Table({
             id="table-body-empty"
             className="m-0 px-2 py-3 text-center text-sm"
           >
-            No articles found.
+            {normalizedSearchTerm
+              ? `No articles found for "${searchTerm.trim()}".`
+              : "No articles found."}
           </li>
         ) : (
           paginatedData.map((article, index) => {
