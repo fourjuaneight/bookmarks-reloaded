@@ -5,8 +5,8 @@ import { Analytics } from "@vercel/analytics/next"
 import { Inter } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-import Header from "./header";
-import Footer from "./footer";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import NoiseBackground from "@/components/NoiseBackground";
 
 import "./reset.css";

@@ -3,7 +3,7 @@ import {
   DEFAULT_ARTICLE_SORT_DIRECTION,
   DEFAULT_ARTICLE_SORT_FIELD,
 } from "@/utils/articles";
-import Intro from "./intro";
+import Intro from "../components/Intro";
 import { Table } from "@/components/Table";
 
 export default async function Home() {
