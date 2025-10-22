@@ -2,6 +2,8 @@ import Image from "next/image";
 import type { AnchorHTMLAttributes, JSX, ReactNode } from "react";
 import type { StaticImageData } from "next/image";
 
+import { resolveHref } from "@/utils/resolveHref";
+
 import heroIllustration from "@/img/hero.png";
 import heroIllustrationAlt from "@/img/hero-clean.png";
 
@@ -26,13 +28,12 @@ const illustrations: { home: IllustrationConfig } = {
     imgAlt: heroIllustrationAlt,
     alt: "Illustration of Juan laying on a sofa, coding on a laptop. While being levitated by a wizard cat.",
     heading: "Hi, I'm Juan",
-    copy:
-      "Full-Stack engineer and amateur archivist. This is where I ramble about automation, web development, data hoarding, and interesting stuff I find online.",
+    copy: "Full-Stack engineer and amateur archivist. This is where I ramble about automation, web development, data hoarding, and interesting stuff I find online.",
   },
 };
 
 const socialNav: SocialNavItem[] = [
-  { label: "Email", link: "mailto:contact@cleverlaziness.com" },
+  { label: "Contact", link: "https://juanvillela.dev/contact/" },
   {
     label: "Mastodon",
     link: "https://mastodon.social/@fourjuaneight",
@@ -46,17 +47,9 @@ const socialNav: SocialNavItem[] = [
   { label: "RSS", link: "/posts/index.xml" },
 ];
 
-// Normalize relative links so they resolve correctly under custom base paths.
-const normalizeLink = (link: string) => {
-  if (link.startsWith("http") || link.startsWith("mailto:")) {
-    return link;
-  }
-  return link.startsWith("/") ? link : `/${link}`;
-};
-
 // Inject safe attributes on author-provided anchor tags before letting them hydrate.
 const enhanceCopy = (copy: string) =>
-  copy.replace(/<a/g, "<a rel=\"noopener noreferrer\" target=\"_blank\"");
+  copy.replace(/<a/g, '<a rel="noopener noreferrer" target="_blank"');
 
 function EmailIcon(): JSX.Element {
   return (
@@ -201,7 +194,10 @@ export default function Intro({ contentType }: IntroProps) {
       </div>
       <div className="flex flex-col items-start justify-start w-full">
         <h2 className="font-mdNichrome md:text-4xl text-3xl">{home.heading}</h2>
-        <p className="text-xl" dangerouslySetInnerHTML={{ __html: enhancedCopy }} />
+        <p
+          className="text-xl"
+          dangerouslySetInnerHTML={{ __html: enhancedCopy }}
+        />
         <nav id="contact-list" className="w-auto">
           <ul className="auto-cols-min gap-x-5 grid grid-rows-1 items-center list-none my-2 p-0">
             {socialNav.map((item) => {
@@ -222,7 +218,7 @@ export default function Intro({ contentType }: IntroProps) {
                 <li key={item.label} className="m-0 row-start-1">
                   <a
                     className="focus:underline hover:underline no-underline text-sm xs:text-base"
-                    href={normalizeLink(item.link)}
+                    href={resolveHref(item.link)}
                     data-type="social"
                     {...linkProps}
                   >
