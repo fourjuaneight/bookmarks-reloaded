@@ -47,6 +47,11 @@ const socialNav: SocialNavItem[] = [
   { label: "RSS", link: "/posts/index.xml" },
 ];
 
+// Allow deployments on alternate hostnames without hardcoding absolute URLs.
+const navConfig = {
+  homeUrl: process.env.NEXT_PUBLIC_HOME_URL ?? "/",
+} as const;
+
 // Inject safe attributes on author-provided anchor tags before letting them hydrate.
 const enhanceCopy = (copy: string) =>
   copy.replace(/<a/g, '<a rel="noopener noreferrer" target="_blank"');
@@ -218,7 +223,7 @@ export default function Intro({ contentType }: IntroProps) {
                 <li key={item.label} className="m-0 row-start-1">
                   <a
                     className="focus:underline hover:underline no-underline text-sm xs:text-base"
-                    href={resolveHref(item.link)}
+                    href={resolveHref(navConfig.homeUrl, item.link)}
                     data-type="social"
                     {...linkProps}
                   >
